@@ -68,7 +68,7 @@ module RubyProf
         method.children.each do |callee|
           @output << "cfl=#{file(callee.target)}\n"
           @output << "cfn=#{method_name(callee.target)}\n"
-          @output << "calls=#{callee.called} #{callee.line}\n"
+          @output << "calls=#{callee.called} #{callee.target.line}\n"
 
           # Print out total times here!
           @output << "#{callee.line} #{convert(callee.total_time)}\n"

@@ -83,7 +83,7 @@ module RubyProf
     def aggregate_parents
       # Group call info's based on their parents
       groups = self.call_infos.inject(Hash.new) do |hash, call_info|
-        key = call_info.parent ? call_info.parent.target : self
+        key = call_info.parent ? [call_info.parent.target, call_info.line] : self
         (hash[key] ||= []) << call_info
         hash
       end
@@ -96,7 +96,7 @@ module RubyProf
     def aggregate_children
       # Group call info's based on their targets
       groups = self.children.inject(Hash.new) do |hash, call_info|
-        key = call_info.target
+        key = [call_info.target, call_info.line]
         (hash[key] ||= []) << call_info
         hash
       end

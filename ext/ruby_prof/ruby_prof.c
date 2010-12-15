@@ -239,22 +239,49 @@ method_key(prof_method_key_t* key, VALUE klass, ID mid)
     key->key = (klass << 4) + (mid << 2);
 }
 
+/* ================  Call Info Key   =================*/
+static int
+call_info_table_cmp(prof_call_info_key_t *key1, prof_call_info_key_t *key2)
+{
+  return (key1->klass != key2->klass) || (key1->mid != key2->mid) || (key1->line != key2->line);
+}
+
+static st_index_t
+call_info_table_hash(prof_call_info_key_t *key)
+{
+   return key->key;
+}
+
+static struct st_hash_type type_call_info_hash = {
+    call_info_table_cmp,
+    call_info_table_hash
+};
+
+static void
+call_info_key(prof_call_info_key_t* key, VALUE klass, ID mid, int line)
+{
+    key->klass = klass;
+    key->mid = mid;
+    key->line = line;
+    key->key = (line << 6) + (klass << 4) + (mid << 2);
+}
+
 
 /* ================  Call Info   =================*/
 static st_table *
 call_info_table_create()
 {
-  return st_init_table(&type_method_hash);
+  return st_init_table(&type_call_info_hash);
 }
 
 static size_t
-call_info_table_insert(st_table *table, const prof_method_key_t *key, prof_call_info_t *val)
+call_info_table_insert(st_table *table, const prof_call_info_key_t *key, prof_call_info_t *val)
 {
   return st_insert(table, (st_data_t) key, (st_data_t) val);
 }
 
 static prof_call_info_t *
-call_info_table_lookup(st_table *table, const prof_method_key_t *key)
+call_info_table_lookup(st_table *table, const prof_call_info_key_t *key)
 {
     st_data_t val;
     if (st_lookup(table, (st_data_t) key, &val))
@@ -1236,12 +1263,14 @@ prof_event_hook(rb_event_flag_t event, NODE *node, VALUE self, ID mid, VALUE kla
         }
         else
         {
-          call_info = call_info_table_lookup(frame->call_info->call_infos, method->key);
+          prof_call_info_key_t key;
+          call_info_key(&key, method->key->klass, method->key->mid, frame->line); 
+          call_info = call_info_table_lookup(frame->call_info->call_infos, &key);
 
           if (!call_info)
           {
             call_info = prof_call_info_create(method, frame->call_info);
-            call_info_table_insert(frame->call_info->call_infos, method->key, call_info);
+            call_info_table_insert(frame->call_info->call_infos, &key, call_info);
             prof_add_call_info(method->call_infos, call_info);
           }
         }

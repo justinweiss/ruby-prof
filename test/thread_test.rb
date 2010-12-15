@@ -71,7 +71,7 @@ class ThreadTest < Test::Unit::TestCase
     assert_equal(1, method.call_infos.length)
     call_info = method.call_infos[0]
     assert_equal('ThreadTest#test_thread_timings', call_info.call_sequence)
-    assert_equal(1, call_info.children.length)
+    assert_equal(2, call_info.children.length)
 
     method = methods[1]
     assert_equal('Kernel#sleep', method.full_name)
@@ -81,7 +81,7 @@ class ThreadTest < Test::Unit::TestCase
     assert_in_delta(0, method.wait_time, 0.01)
     assert_in_delta(0, method.children_time, 0.01)
 
-    assert_equal(1, method.call_infos.length)
+    assert_equal(2, method.call_infos.length)
     call_info = method.call_infos[0]
     assert_equal('ThreadTest#test_thread_timings->Kernel#sleep', call_info.call_sequence)
     assert_equal(0, call_info.children.length)

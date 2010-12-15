@@ -79,13 +79,16 @@ module RubyProf
       parent.children.delete(self)
     end
 
-    # find a sepcific call in list of children. returns nil if not found.
-    # note: there can't be more than one child with a given target method. in other words:
-    # x.children.grep{|y|y.target==m}.size <= 1 for all method infos m and call infos x
+    # find a specific call in list of children. returns nil if not
+    # found.  note: if a method is called multiple times, this will
+    # merge the first with all of the rest.
     def find_call(other)
       matching = children.select { |kid| kid.target == other.target }
-      raise "inconsistent call tree" unless matching.size <= 1
-      matching.first
+      first_call = matching.shift
+      matching.each do |match|
+        first_call.merge_call_tree(match)
+      end
+      first_call
     end
 
     # merge two call trees. adds self, wait, and total time of other to self and merges children of other into children of self.

@@ -106,6 +106,15 @@ typedef struct {
     st_index_t key;                         /* Cache calculated key */
 } prof_method_key_t;
 
+/* Hash key for a call inside a method. */
+typedef struct {
+    VALUE klass;                            /* The method's class. */
+    ID mid;                                 /* The method id. */
+    int line;                               /* The line number this method is called from. */
+    int depth;                              /* The recursion depth. */
+    st_index_t key;                         /* Cache calculated key */
+} prof_call_info_key_t;
+
 struct prof_call_infos_t;
 
 /* Profiling information for each method. */
